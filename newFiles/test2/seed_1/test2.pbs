@@ -1,0 +1,17 @@
+
+#PBS -S /bin/bash
+#PBS -A ntg-662-aa
+#PBS -l nodes=1:gpus=1,mem=12gb
+#PBS -l walltime=03:00:00
+#PBS -M rpost@cs.ualberta.ca
+#PBS -m n
+#PBS -t 1
+#PBS -o /home/robpost/Desktop/scripts/newFiles/test2/seed_1/output.txt
+#PBS -e /home/robpost/Desktop/scripts/newFiles/test2/seed_1/error.txt
+
+
+export PYTHONPATH=/home/rpost/DeepRL/agents/:$PYTHONPATH
+export PYTHONPATH=/home/rpost/DeepRL/utilities/:$PYTHONPATH
+export PYTHONPATH=/home/rpost/DeepRL/network/:$PYTHONPATH
+    
+THEANO_FLAGS='device=gpu,floatX=float32,optimizer_including=cudnn,dnn.conv.algo_fwd=time_once,dnn.conv.algo_bwd=time_once' python /home/rpost/DeepRL/run_dqtn.py --network-type dnn --rom test2 --base-rom-path /home/robpost/Desktop/ALE/roms/ --nn-file /home/robpost/Desktop/scripts/newFiles/test2/seed_1/evaluationNetwork.pkl --evaluationFrequency 1 --seed 1 --epochs 2 --deathEndsEpisode --numHoldoutQValues 32 --steps-per-epoch 0 > /home/robpost/Desktop/scripts/newFiles/test2/seed_1/experimentOutput.txt

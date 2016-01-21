@@ -1,2 +1,3 @@
 # MiscScripts
-Miscellaneous scripts
+Miscellaneous scripts for server and personal use
+
