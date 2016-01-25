@@ -1,6 +1,6 @@
 import os
 from shutil import copyfile
-
+import shutil
 def findBestEpochsOfResultsFile(inputfile):
     f = open(inputfile, 'r')
     header = f.readline()
@@ -143,7 +143,7 @@ def getGameList(directory):
     gameFolders = os.listdir(directory)
     gameList = []
     for folder in gameFolders:
-        if folder.ends(".bin"):
+        if folder.endswith(".bin"):
             gameList.append(folder[0:-4])
 
     return gameList
@@ -153,12 +153,15 @@ def copyGameFoldersToNewDirectory(romDirectory, originalDirectory, newDirectory)
     foldersToMove = os.listdir(originalDirectory)
     
     #"/gs/project/ntg-662-aa/dqn_baselinesDebug/"
-
+    print gameList
+    print foldersToMove
 
     for folderToMove in foldersToMove:
         for game in gameList:
             if game in folderToMove:
-                shutil.move(folderToMove, newDirectory + str(game) + "/seed_1/")
+                print folderToMove
+		print newDirectory + str(game) + "/seed_1/"
+		shutil.move(originalDirectory + folderToMove, newDirectory + str(game) + "/seed_1/")
                 break
 
 
@@ -180,6 +183,6 @@ def main():
     #createAllGameBestEvalNetworkFile(projectDirectoryString, oldDir, newDir)
     #createAllGameEvaluationPBSFiles( projectDirectoryString, oldDir, newDir, baseRomPath)
 
-    copyGameFoldersToNewDirectory(baseRomPath, projectDirectoryString, newDir)
+    copyGameFoldersToNewDirectory(baseRomPath, "/home/rpost/", projectDirectoryString + newDir)
 
 main()
