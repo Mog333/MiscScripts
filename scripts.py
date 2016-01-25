@@ -138,6 +138,30 @@ def createAllGameBestEvalNetworkFile(projectDirectoryString, oldDir, newDir):
         copyfile(bestNetworkFile, newGameFolder + "evaluationNetwork.pkl")
 
 
+#Pass in a rom directory - names of roms with .bin ending are extracted and returned in a list
+def getGameList(directory):
+    gameFolders = os.listdir(directory)
+    gameList = []
+    for folder in gameFolders:
+        if folder.ends(".bin"):
+            gameList.append(folder[0:-4])
+
+    return gameList
+
+def copyGameFoldersToNewDirectory(romDirectory, originalDirectory, newDirectory):
+    gameList = getGameList(romDirectory)
+    foldersToMove = os.listdir(originalDirectory)
+    
+    #"/gs/project/ntg-662-aa/dqn_baselinesDebug/"
+
+
+    for folderToMove in foldersToMove:
+        for game in gameList:
+            if game in folderToMove:
+                shutil.move(folderToMove, newDirectory + str(game) + "/seed_1/")
+                break
+
+
 
 def main():
     environment = "guillimin"
@@ -152,8 +176,10 @@ def main():
         newDir = "dqn_baselinesDebug/"
         baseRomPath = "/home/rpost/roms"
     
-    createGameFolders(               projectDirectoryString, oldDir, newDir)
-    createAllGameBestEvalNetworkFile(projectDirectoryString, oldDir, newDir)
-    createAllGameEvaluationPBSFiles( projectDirectoryString, oldDir, newDir, baseRomPath)
+    #createGameFolders(               projectDirectoryString, oldDir, newDir)
+    #createAllGameBestEvalNetworkFile(projectDirectoryString, oldDir, newDir)
+    #createAllGameEvaluationPBSFiles( projectDirectoryString, oldDir, newDir, baseRomPath)
+
+    copyGameFoldersToNewDirectory(baseRomPath, projectDirectoryString, newDir)
 
 main()
