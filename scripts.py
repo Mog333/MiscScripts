@@ -165,6 +165,23 @@ def copyGameFoldersToNewDirectory(romDirectory, originalDirectory, newDirectory)
                 break
 
 
+def deleteMostRecentNetworkFile(romDirectory, projectDirectory):
+    gameFolders = os.listdir(projectDirectory)
+    for gameFolder in gameFolders:
+        if not os.path.isdir(projectDirectory + gameFolder + "/seed_1/"):
+            continue
+
+        gameFolderContents = os.listdir(projectDirectory + gameFolder + "/seed_1/")
+        gamesNetworkFiles = [item for item in gameFolderContents if "network" in item]
+        networkNumbers = [int(item[item.index("_") + 1 : item.index(".")]) for item in gamesNetworkFiles]
+        highestNum = max(networkNumbers)
+
+        print projectDirectory + gameFolder + "/seed_1/network_" + str(highestNum) + ".pkl"
+        
+
+
+
+
 
 def main():
     environment = "guillimin"
