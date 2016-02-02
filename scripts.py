@@ -175,9 +175,10 @@ def deleteMostRecentNetworkFile(romDirectory, projectDirectory):
         gamesNetworkFiles = [item for item in gameFolderContents if "network" in item]
         networkNumbers = [int(item[item.index("_") + 1 : item.index(".")]) for item in gamesNetworkFiles]
         highestNum = max(networkNumbers)
-
-        print projectDirectory + gameFolder + "/seed_1/network_" + str(highestNum) + ".pkl"
+        fileToRemove = projectDirectory + gameFolder + "/seed_1/network_" + str(highestNum) + ".pkl"
+        print fileToRemove
         
+        os.remove(fileToRemove)
 
 
 
@@ -200,6 +201,7 @@ def main():
     #createAllGameBestEvalNetworkFile(projectDirectoryString, oldDir, newDir)
     #createAllGameEvaluationPBSFiles( projectDirectoryString, oldDir, newDir, baseRomPath)
 
-    copyGameFoldersToNewDirectory(baseRomPath, "/home/rpost/", projectDirectoryString + newDir)
+    # copyGameFoldersToNewDirectory(baseRomPath, "/home/rpost/", projectDirectoryString + newDir)
+    deleteMostRecentNetworkFile(baseRomPath, projectDirectoryString + "dqnNewBaselines/")
 
 main()
