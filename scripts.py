@@ -177,10 +177,27 @@ def deleteMostRecentNetworkFile(romDirectory, projectDirectory):
         highestNum = max(networkNumbers)
         fileToRemove = projectDirectory + gameFolder + "/seed_1/network_" + str(highestNum) + ".pkl"
         print fileToRemove
-        
+
         os.remove(fileToRemove)
 
 
+
+
+def getBestResultsList(romDirectory, projectDirectory, extensionToResults):
+    gameList = getGameList(romDirectory)
+    projectDirectoryContents = os.listdir(projectDirectory)
+    gameDict = {}
+    for folder in projectDirectoryContents:
+        for game in gameList:
+            if not os.path.isfile(folder + extensionToResults):
+                continue
+
+            result = findBestEpochsOfResultsFile(folder + extensionToResults)
+            gameDict[game] = result
+
+
+    for key in gameDict:
+        print gameDict[key]
 
 
 
