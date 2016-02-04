@@ -188,23 +188,26 @@ def getBestResultsList(romDirectory, projectDirectory, extensionToResults):
     projectDirectoryContents = os.listdir(projectDirectory)
     gameDict = {}
     for folder in projectDirectoryContents:
-        for game in gameList:
-            if not os.path.isfile(folder + extensionToResults):
-                continue
+        fullPath = projectDirectory + folder + "/" + extensionToResults
+        print fullPath
+        if not os.path.isfile(fullPath):
+            continue
 
-            result = findBestEpochsOfResultsFile(folder + extensionToResults)
-            gameDict[game] = result
+        result = findBestEpochsOfResultsFile(fullPath)
+        gameDict[folder] = result
 
 
-    for key in gameDict:
-        print gameDict[key]
 
+    for key in sorted(gameDict.keys()):
+        # print str(key) + ",\t" + str(gameDict[key][1])
+        # print '{0:{width}}'.format(\
+        print '{:<25}'.format(str(key)) + str(gameDict[key][1])
 
 
 def main():
-    environment = "guillimin"
+    environment = "home"
     if environment == "home":
-        projectDirectoryString = "/home/robpost/Desktop/scripts/"
+        projectDirectoryString = "/home/robpost/Desktop/MiscScripts/"
         oldDir = "pullBestEpoch/"
         newDir = "newFiles/"
         baseRomPath = "/home/robpost/Desktop/ALE/roms/"
@@ -220,5 +223,9 @@ def main():
 
     # copyGameFoldersToNewDirectory(baseRomPath, "/home/rpost/", projectDirectoryString + newDir)
     # deleteMostRecentNetworkFile(baseRomPath, projectDirectoryString + "dqnNewBaselines/")
-    getBestResultsList(baseRomPath, projectDirectoryString + "dqnNewBaselines/", "seed_1/results.csv")
+
+
+    getBestResultsList(baseRomPath, projectDirectoryString + "gameResults/", "seed_1/results.csv")
+
+    # getBestResultsList(baseRomPath, projectDirectoryString + "dqnNewBaselines/", "seed_1/results.csv")
 main()
