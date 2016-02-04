@@ -219,6 +219,6 @@ def main():
     #createAllGameEvaluationPBSFiles( projectDirectoryString, oldDir, newDir, baseRomPath)
 
     # copyGameFoldersToNewDirectory(baseRomPath, "/home/rpost/", projectDirectoryString + newDir)
-    deleteMostRecentNetworkFile(baseRomPath, projectDirectoryString + "dqnNewBaselines/")
-
+    # deleteMostRecentNetworkFile(baseRomPath, projectDirectoryString + "dqnNewBaselines/")
+    getBestResultsList(baseRomPath, projectDirectoryString + "dqnNewBaselines/", "seed_1/results.csv")
 main()
