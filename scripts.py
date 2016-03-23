@@ -201,11 +201,12 @@ def getBestResultsList(romDirectory, projectDirectory, extensionToResults):
     for key in sorted(gameDict.keys()):
         # print str(key) + ",\t" + str(gameDict[key][1])
         # print '{0:{width}}'.format(\
-        print '{:<25}'.format(str(key)) + str(gameDict[key][1])
 
+        print str(gameDict[key][1])
+        #print '{:<25}'.format(str(key) + ",") + str(gameDict[key][1])
 
 def main():
-    environment = "home"
+    environment = "guillimin"
     if environment == "home":
         projectDirectoryString = "/home/robpost/Desktop/MiscScripts/"
         oldDir = "pullBestEpoch/"
@@ -225,7 +226,7 @@ def main():
     # deleteMostRecentNetworkFile(baseRomPath, projectDirectoryString + "dqnNewBaselines/")
 
 
-    getBestResultsList(baseRomPath, projectDirectoryString + "gameResults/", "seed_1/results.csv")
+    getBestResultsList(baseRomPath, projectDirectoryString + "dqnNewBaselines/", "seed_1/results.csv")
 
     # getBestResultsList(baseRomPath, projectDirectoryString + "dqnNewBaselines/", "seed_1/results.csv")
 main()
