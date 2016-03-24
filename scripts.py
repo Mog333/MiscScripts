@@ -1,6 +1,8 @@
 import os
 from shutil import copyfile
 import shutil
+import re
+
 def findBestEpochsOfResultsFile(inputfile):
     f = open(inputfile, 'r')
     header = f.readline()
@@ -15,13 +17,15 @@ def findBestEpochsOfResultsFile(inputfile):
     firstLineContents = [item.strip() for item in firstLine.split(',')]
     
     bestEpoch = int(firstLineContents[0])
-    bestValue = float(firstLineContents[1])
+    bestValue = float(firstLineContents[3])
 
     for line in f:
+        if re.search("[a-zA-Z]", line) != None:
+            continue
         line.split(',')
         lineContents = [item.strip() for item in line.split(',')]
         epoch = int(lineContents[0])
-        value = float(lineContents[1])
+        value = float(lineContents[3])
 
 
         if value > bestValue:
@@ -204,6 +208,23 @@ def getBestResultsList(romDirectory, projectDirectory, extensionToResults):
 
         print str(gameDict[key][1])
         #print '{:<25}'.format(str(key) + ",") + str(gameDict[key][1])
+
+
+
+def getCompiledResultsFolder(projectDirectoryString, outputPath):
+    #get list of games, project directory and extension to files create folders to hold only the task results files
+    resFiles = []
+    for root, subdirs, files in os.walk(projectDirectoryString):
+        for file in files:
+            if 'result' in file and file.endswith(".csv"):
+                resFiles.append(root + "/" + file)
+    splitFileName = [f.split("/") for f in resFiles]
+    for file in splitFileName:
+        newPath = outputPath + "/" + file[1] + "/" + file[2]
+        if not os.path.isdir(newPath):
+            os.makedirs(newPath)
+        copyfile(projectDirectoryString + "/" + file[1] + "/" + file[2] + "/" + file[3], newPath + "/" + file[3])
+
 
 def main():
     environment = "guillimin"
