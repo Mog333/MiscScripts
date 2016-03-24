@@ -223,7 +223,13 @@ def getCompiledResultsFolder(projectDirectoryString, outputPath):
         newPath = outputPath + "/" + file[1] + "/" + file[2]
         if not os.path.isdir(newPath):
             os.makedirs(newPath)
-        copyfile(projectDirectoryString + "/" + file[1] + "/" + file[2] + "/" + file[3], newPath + "/" + file[3])
+        fileToCopy = projectDirectoryString + "/" + file[1] + "/" + file[2] + "/" + file[3]
+        newFilename = newPath + "/" + file[3]
+        print fileToCopy
+        print newFilename
+        # copyfile(fileToCopy, newFilename)
+
+        # copyfile(projectDirectoryString + "/" + file[1] + "/" + file[2] + "/" + file[3], newPath + "/" + file[3])
 
 
 def main():
