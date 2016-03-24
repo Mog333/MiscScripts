@@ -220,11 +220,11 @@ def getCompiledResultsFolder(projectDirectoryString, outputPath):
                 resFiles.append(root + "/" + file)
     splitFileName = [f.split("/") for f in resFiles]
     for file in splitFileName:
-        newPath = outputPath + "/" + file[1] + "/" + file[2]
+        newPath = outputPath + "/" + file[-3] + "/" + file[-2]
         if not os.path.isdir(newPath):
             os.makedirs(newPath)
-        fileToCopy = projectDirectoryString + "/" + file[1] + "/" + file[2] + "/" + file[3]
-        newFilename = newPath + "/" + file[3]
+        fileToCopy = projectDirectoryString + "/" + "/".join(file[1:])#file[1] + "/" + file[2] + "/" + file[3]
+        newFilename = newPath + "/" + file[-1]
         print fileToCopy
         print newFilename
         # copyfile(fileToCopy, newFilename)
