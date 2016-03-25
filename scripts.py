@@ -50,7 +50,7 @@ def createGameFolders(projectDirectoryString, oldDir, newDir):
 
 
 def createTransferBaselineJobFiles(baseDirectory = 0, gameList = 0, modeList= 0, diffList = 0):
-    baseDirectory = "/gs/project/ntg-662-aa/RLRP/transferBaselines2"
+    baseDirectory = "/gs/project/ntg-662-aa/RLRP/transferBaselines2/"
     gameList = ["boxing", "freeway", "hero", "space_invaders"]
     flavorList = [  [[0, 1], [0, 2], [0,3]], \
                     [[0, 1]], \
@@ -281,7 +281,9 @@ def main():
     # deleteMostRecentNetworkFile(baseRomPath, projectDirectoryString + "dqnNewBaselines/")
 
 
-    getBestResultsList(baseRomPath, projectDirectoryString + "dqnNewBaselines/", "seed_1/results.csv")
-
     # getBestResultsList(baseRomPath, projectDirectoryString + "dqnNewBaselines/", "seed_1/results.csv")
-main()
+    createTransferBaselineJobFiles()
+    # getBestResultsList(baseRomPath, projectDirectoryString + "dqnNewBaselines/", "seed_1/results.csv")
+
+if __name__ == "__main__":
+    main()
