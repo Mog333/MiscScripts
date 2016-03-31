@@ -1,27 +1,205 @@
 from pylab import *
 import matplotlib.pyplot as plt
- 
-def getResultsFromFile(filename, numTasks = 1):
+import re
+import os
+from shutil import copyfile
+import shutil
+import sys
+
+
+archs = ["DQNNet", 
+    "PolicySwitchNet", 
+    "PolicyPartialSwitchNet", 
+    "TaskTransformationNet",  
+    "FirstRepresentationSwitchNet"
+        ]
+
+hasCharacters = re.compile("[a-zA-Z]")
+
+
+def getResultsFromTaskFile(filename):
     resFile = open(filename, 'r')
     rewards = []
-    for i in xrange(numTasks):
-        rewards.append([])
- 
     epochs  = []
+
     line = resFile.readline()
     while  line != "":
         if line == '\n' or line == '':
             continue
+
+        if hasCharacters.match(line) != None:
+            line = resFile.readline()
+            continue
  
         contents = line.split(",")
-        epochs.append(contents[0])
-        for i in xrange(numTasks):
-            r = float(contents[i + 1])
-            rewards[i].append(r)
- 
+        epochs.append(int(contents[0].strip()))
+        rewards.append(float(contents[3].strip()))
         line = resFile.readline()
+
+    resFile.close()
  
     return (epochs, rewards)
+
+
+
+
+
+
+
+def collectDataFromMultigameExperiment(directory, gameString):
+    baselineDataFiles = directory + "/" + gameString + "/baselines/"
+    games = gameString.split(",")
+    gameData = {}
+    numTasks = len(games)
+
+    for index in range(numTasks):
+        gameData["task_" + str(index)] = {}
+
+
+    for folder in os.listdir(baselineDataFiles):
+        if not os.path.isdir(baselineDataFiles + "/" + folder):
+            continue
+        if folder not in games:
+            continue
+
+        taskIndex = games.index(folder)
+        baselineDataFile = baselineDataFiles + "/" + folder + "/task_0_results.csv"
+        baselineData = getResultsFromTaskFile(baselineDataFile)
+        gameData["task_" + str(taskIndex)]["baselineData"] = baselineData
+
+    for arch in archs:
+        archDirectory = directory + "/" + gameString + "/" + arch + "/"
+        if not os.path.isdir(archDirectory):
+            continue
+
+        for taskID in xrange(0,numTasks):
+            archDataFile = archDirectory + "task_" + str(taskID) + "_results.csv"
+            taskArchData = getResultsFromTaskFile(archDataFile)
+            gameData["task_" + str(taskID)][arch + "Data"] = taskArchData
+    return gameData
+
+def collectDataFromMultiFlavorExperiment(directory, gameFlavorString):
+    modeOrDiffString = gameFlavorString.split("_")[1].split(",")
+    folderPrefix = modeOrDiffString[0][0]
+    modeOrDiffString[0] = modeOrDiffString[0][1:]
+    numTasks = len(modeOrDiffString)
+    print modeOrDiffString
+    baselineDataFiles = directory + "/" + gameFlavorString + "/baselines/"
+    gameData = {}
+
+    for index in modeOrDiffString:
+        gameData["task_" + str(index)] = {}
+        taskBaselineFolder = baselineDataFiles + "/" + folderPrefix + str(index)
+        if not os.path.isdir(taskBaselineFolder):
+            continue
+
+        taskBaselineDataFile = taskBaselineFolder + "/task_0_results.csv"
+        baselineData = getResultsFromTaskFile(taskBaselineDataFile)
+        gameData["task_" + str(index)]["baselineData"] = baselineData
+
+    for arch in archs:
+        archDirectory = directory + "/" + gameFlavorString + "/" + arch + "/"
+        if not os.path.isdir(archDirectory):
+            continue
+
+        for taskID in xrange(0,numTasks):
+            archDataFile = archDirectory + "task_" + str(taskID) + "_results.csv"
+            taskArchData = getResultsFromTaskFile(archDataFile)
+            gameData["task_" + str(taskID)][arch + "Data"] = taskArchData
+    return gameData
+
+
+def test():
+    # plotMultigameResults("resultsCompile1", "pong,breakout")
+    plotMultiModeResults("resultsCompile1", "hero_M0,1,2,3,4")
+
+def plotMultiModeResults(directory, gameModeString):
+    gameModeStringComponents = gameModeString.split("_")
+    gameName = gameModeStringComponents[0]
+    modeOrDiffString = gameModeStringComponents[1].split(",")
+    folderPrefix = modeOrDiffString[0][0]
+    modeOrDiffString[0] = modeOrDiffString[0][1:]
+    numTasks = len(modeOrDiffString)
+    data = collectDataFromMultiFlavorExperiment(directory, gameModeString)
+
+    for i in xrange(numTasks):
+        fig = plt.figure(i + 1)
+        sub = plt.subplot(111)
+        taskData = data["task_" + str(modeOrDiffString[i])]
+
+        for arch in archs:
+            plt.plot(taskData[arch + "Data"][0], taskData[arch + "Data"][1], label=arch)
+
+        plt.plot(taskData["baselineData"][0], taskData["baselineData"][1], label="Baseline")
+ 
+        plt.xlabel('Epochs')
+        plt.ylabel('Average Reward')
+        plt.title(gameName + " " + folderPrefix + str(modeOrDiffString[i]))
+        # plt.ylim([-0.5, 100])
+        # plt.xlim([0, 200])
+ 
+        box = sub.get_position()
+        sub.set_position([box.x0, box.y0, box.width * 0.75, box.height])
+        L = plt.legend(loc='center left', bbox_to_anchor=(1.00, 0.5), prop={'size':9})
+        L.draggable(state=True)
+        fig.savefig(gameModeString + "_" + modeOrDiffString[i], dpi=fig.dpi)
+
+    plt.show()
+
+def plotMultigameResults(directory, gameString):
+    games = gameString.split(",")
+    numTasks = len(games)
+    data = collectDataFromMultigameExperiment(directory, gameString)
+
+    for i in xrange(numTasks):
+        fig = plt.figure(i + 1)
+        sub = plt.subplot(111)
+        taskData = data["task_" + str(i)]
+
+        for arch in archs:
+            plt.plot(taskData[arch + "Data"][0], taskData[arch + "Data"][1], label=arch)
+
+        plt.plot(taskData["baselineData"][0], taskData["baselineData"][1], label="Baseline")
+ 
+        plt.xlabel('Epochs')
+        plt.ylabel('Average Reward')
+        plt.title(games[i])
+        # plt.ylim([-0.5, 100])
+        # plt.xlim([0, 200])
+ 
+        box = sub.get_position()
+        sub.set_position([box.x0, box.y0, box.width * 0.75, box.height])
+        L = plt.legend(loc='center left', bbox_to_anchor=(1.00, 0.5), prop={'size':9})
+        L.draggable(state=True)
+        fig.savefig(gameString + "_" + games[i], dpi=fig.dpi)
+
+    plt.show()
+
+
+
+
+
+# def getResultsFromFile(filename, numTasks = 1):
+#     resFile = open(filename, 'r')
+#     rewards = []
+#     for i in xrange(numTasks):
+#         rewards.append([])
+ 
+#     epochs  = []
+#     line = resFile.readline()
+#     while  line != "":
+#         if line == '\n' or line == '':
+#             continue
+ 
+#         contents = line.split(",")
+#         epochs.append(contents[0])
+#         for i in xrange(numTasks):
+#             r = float(contents[i + 1])
+#             rewards[i].append(r)
+ 
+#         line = resFile.readline()
+ 
+#     return (epochs, rewards)
  
 def plotMultiFlavorResults(directory, game, numTasks):
     flavorResults = []

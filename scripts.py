@@ -2,6 +2,26 @@ import os
 from shutil import copyfile
 import shutil
 import re
+import sys
+
+archs = ["DQNNet", 
+    "PolicySwitchNet", 
+    "PolicyPartialSwitchNet", 
+    "TaskTransformationNet",  
+    "FirstRepresentationSwitchNet"
+        ]
+
+def copytest(gamename):
+    for arch in archs:
+        for file in os.listdir("./" + arch):
+            if "task" in file and ".csv" in file:
+                filepath = "./" + arch + "/" + file
+                newfilepath = "../../../resultsCompile1/" + gamename + "/"+ arch + "/" + file
+                print filepath
+                print newfilepath 
+                copyfile(filepath, newfilepath)
+
+
 
 def findBestEpochsOfResultsFile(inputfile):
     f = open(inputfile, 'r')
@@ -61,7 +81,7 @@ def createTransferBaselineJobFiles(baseDirectory = 0, gameList = 0, modeList= 0,
     seeds = [2]
     epochs = 200
     baseRomPath = "/home/rpost/roms/"
-    for gameIndex in len(gameList):
+    for gameIndex in range(len(gameList)):
         game = gameList[gameIndex]
         gamesFlavors = flavorList[gameIndex]
         for flavor in gamesFlavors:
@@ -71,7 +91,7 @@ def createTransferBaselineJobFiles(baseDirectory = 0, gameList = 0, modeList= 0,
             for seed in seeds:
 
                 experimentDirectory = baseDirectory + "/" + str(game) + "/mode_" + str(mode) + "_diff_" + str(diff) + "/seed_" + str(seed) + "/"
-                jobFilename = str(game) + "m_" + str(mode) + "_d_" + str(diff) + "_s_" + str(seed) + ".pbs"
+                jobFilename = str(game) + "_m_" + str(mode) + "_d_" + str(diff) + "_s_" + str(seed) + ".pbs"
                 print experimentDirectory
 
                 if not os.path.isdir(experimentDirectory):
@@ -79,9 +99,9 @@ def createTransferBaselineJobFiles(baseDirectory = 0, gameList = 0, modeList= 0,
 
                 header = createPBSHeader(experimentDirectory)
                 theanoFlag = createTheanoFlagString("gpu")
-                command = createJobCommandString(experimentDirectory, game, seed, epochs, baseRomPath, str(mode), str(diff)):
+                command = createJobCommandString(experimentDirectory, game, seed, epochs, baseRomPath, str(mode), str(diff))
 
-                jobFile = open(experimentDirectory + jobFilename)
+                jobFile = open(experimentDirectory + jobFilename, "w")
                 jobFile.write(header + "\n\n" + theanoFlag + " " + command)
                 jobFile.close()
 
