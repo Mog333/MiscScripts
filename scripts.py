@@ -38,6 +38,7 @@ def findBestEpochsOfResultsFile(inputfile):
     
     bestEpoch = int(firstLineContents[0])
     bestValue = float(firstLineContents[3])
+    lastEpoch = bestEpoch
 
     for line in f:
         if re.search("[a-zA-Z]", line) != None:
@@ -46,7 +47,7 @@ def findBestEpochsOfResultsFile(inputfile):
         lineContents = [item.strip() for item in line.split(',')]
         epoch = int(lineContents[0])
         value = float(lineContents[3])
-
+        lastEpoch = epoch
 
         if value > bestValue:
             bestEpoch = epoch
