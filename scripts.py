@@ -3,6 +3,7 @@ from shutil import copyfile
 import shutil
 import re
 import sys
+import subprocess
 
 archs = ["DQNNet", 
     "PolicySwitchNet", 
@@ -53,7 +54,7 @@ def findBestEpochsOfResultsFile(inputfile):
             bestEpoch = epoch
             bestValue = value
 
-    return bestEpoch, bestValue
+    return bestEpoch, bestValue, lastEpoch
 
 
 
@@ -255,9 +256,17 @@ def getBestResultsList(romDirectory, projectDirectory, extensionToResults):
         # print str(key) + ",\t" + str(gameDict[key][1])
         # print '{0:{width}}'.format(\
 
-        print str(gameDict[key][1])
-        #print '{:<25}'.format(str(key) + ",") + str(gameDict[key][1])
+        #print str(gameDict[key][1])
+        print '{:<25}'.format(str(key) + ",") + str(gameDict[key][1]) + " at epoch: " + str(gameDict[key][0]) +str(". highest epoch: ")+ str(gameDict[key][2])
+    print "Games not complete"
+    for key in sorted(gameDict.keys()):
+        if gameDict[key][2] < 200:
+            print key
 
+
+
+def runJobs(projectDirectory):
+    pass
 
 
 def getCompiledResultsFolder(projectDirectoryString, outputPath):
