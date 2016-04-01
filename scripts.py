@@ -13,7 +13,7 @@ archs = ["DQNNet",
         ]
 
 
-gamesNotDone = ["asterix", "atlantis", "bank_heist","battle_zone","beam_rider","bowling","boxing","breakout","centipede","chopper_command","crazy_climber","demon_attack","double_dunk","enduro","fishing_derby","freeway","frostbite","gopher","gravitar","hero","ice_hockey","ms_pacman","name_this_game","phoenix","pong","private_eye","riverraid","road_runner","robotank","tennis","tutankham","up_n_down","video_pinball","wizard_of_wor","zaxxon"]
+gamesNotDone = ["atlantis", "bank_heist","battle_zone","beam_rider","bowling","boxing","breakout","centipede","chopper_command","crazy_climber","demon_attack","double_dunk","enduro","fishing_derby","freeway","frostbite","gopher","gravitar","hero","ice_hockey","ms_pacman","name_this_game","phoenix","pong","private_eye","riverraid","road_runner","robotank","tennis","tutankham","up_n_down","video_pinball","wizard_of_wor","zaxxon"]
 
 
 def copytest(gamename):
@@ -270,26 +270,29 @@ def getBestResultsList(romDirectory, projectDirectory, extensionToResults):
 
 
 def runJobs(projectDirectory, allowedList = None):
-    p = subprocess.Popen(['find', '.', '-name', '*.pbs'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(['find', projectDirectory, '-name', '*.pbs'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out,err = p.communicate()
     pbsList = out.split('\n')[0:-1]
+    print pbsList
     for jobFileString in pbsList:
-        if allowedList != None and jobFileString.split("/")[1] in allowedList:
+        if allowedList != None and jobFileString.split("/")[4] in allowedList:
             print jobFileString
 
-            with open(jobFileString, "r") as f
-                contents = jobFile.readines()
+            with open(jobFileString, "r") as f:
+                contents = f.readlines()
             newFile = ""
             for line in contents:
                 if "walltime" in line:
                     newFile += "#PBS -l walltime=3:00:00:00\n"
                 else:
-                    newFile += line + "\n"
+                    newFile += line
 
             print newFile
-            # with open(jobFileString, "w") as f
-                # f.write(newFile)
-
+            with open(jobFileString, "w") as f:
+                f.write(newFile)
+            p2 = subprocess.Popen(["qsub", jobFileString], stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            out2,err2=p2.communicate()
+            print out2
 
 def getCompiledResultsFolder(projectDirectoryString, outputPath):
     #get list of games, project directory and extension to files create folders to hold only the task results files
