@@ -300,20 +300,22 @@ def getCompiledResultsFolder(projectDirectoryString, outputPath):
     for root, subdirs, files in os.walk(projectDirectoryString):
         for file in files:
             if 'result' in file and file.endswith(".csv"):
-                resFiles.append(root + "/" + file)
-    splitFileName = [f.split("/") for f in resFiles]
-    for file in splitFileName:
-        newPath = outputPath + "/" + file[-3] + "/" + file[-2]
-        print "newpath:\n" + newPath
+                fullResultsPath = root + "/" + file
+                endOffullResultsPath = fullResultsPath.replace(projectDirectoryString, "")
+                resFiles.append(endOffullResultsPath)
+
+    for file in resFiles:
+    	print "file:\t"+file
+        newPath = outputPath + "/" file[0:file.rfind("/")]
+        print "newpath:\t" + newPath
         if not os.path.isdir(newPath):
             os.makedirs(newPath)
-        fileToCopy = "/".join(file[1:])#file[1] + "/" + file[2] + "/" + file[3]
-        newFilename = newPath + "/" + file[-1]
+        fileToCopy = projectDirectoryString + "/" + file
+        newFilename = outputPath + "/" + file
         print "filetocopy:\t"+fileToCopy
         print "newfilename:\t"+newFilename
         # copyfile(fileToCopy, newFilename)
 
-        # copyfile(projectDirectoryString + "/" + file[1] + "/" + file[2] + "/" + file[3], newPath + "/" + file[3])
 
 
 def main():
