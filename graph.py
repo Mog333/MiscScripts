@@ -41,12 +41,19 @@ def getResultsFromTaskFile(filename):
     return (epochs, rewards)
 
 
+def computeSummedData(data):
+    #data is a tuple (epochs rewards) of two lists which are the same size
+    newData = ([],[])
+    newData[0].append(data[0][0])
+    newData[1].append(data[1][0])
+    for i in xrange(1,len(data[0])):
+        newData[0].append(data[0][i])
+        newData[1].append(newData[1][i - 1] + data[1][i])
+    return newData
 
 
 
-
-
-def collectDataFromMultigameExperiment(directory, gameString):
+def collectDataFromMultigameExperiment(directory, gameString, pathToTaskResult = ""):
     baselineDataFiles = directory + "/" + gameString + "/baselines/"
     games = gameString.split(",")
     gameData = {}
@@ -63,12 +70,13 @@ def collectDataFromMultigameExperiment(directory, gameString):
             continue
 
         taskIndex = games.index(folder)
-        baselineDataFile = baselineDataFiles + "/" + folder + "/task_0_results.csv"
+        baselineDataFile = baselineDataFiles + "/" + folder + pathToTaskResult + "/task_0_results.csv"
         baselineData = getResultsFromTaskFile(baselineDataFile)
         gameData["task_" + str(taskIndex)]["baselineData"] = baselineData
+        gameData["task_" + str(taskIndex)]["baselineDataSummed"] = computeSummedData(baselineData)
 
     for arch in archs:
-        archDirectory = directory + "/" + gameString + "/" + arch + "/"
+        archDirectory = directory + "/" + gameString + "/" + arch + "/" + pathToTaskResult
         if not os.path.isdir(archDirectory):
             continue
 
@@ -76,10 +84,12 @@ def collectDataFromMultigameExperiment(directory, gameString):
             archDataFile = archDirectory + "task_" + str(taskID) + "_results.csv"
             taskArchData = getResultsFromTaskFile(archDataFile)
             gameData["task_" + str(taskID)][arch + "Data"] = taskArchData
+            gameData["task_" + str(taskID)][arch + "DataSummed"] = computeSummedData(taskArchData)
+
     return gameData
 
-def collectDataFromMultiFlavorExperiment(directory, gameFlavorString):
-    modeOrDiffString = gameFlavorString.split("_")[1].split(",")
+def collectDataFromMultiFlavorExperiment(directory, gameFlavorString, seedSuffix = ""):
+    modeOrDiffString = gameFlavorString.split("_")[-1].split(",")
     folderPrefix = modeOrDiffString[0][0]
     modeOrDiffString[0] = modeOrDiffString[0][1:]
     numTasks = len(modeOrDiffString)
@@ -89,38 +99,47 @@ def collectDataFromMultiFlavorExperiment(directory, gameFlavorString):
 
     for index in modeOrDiffString:
         gameData["task_" + str(index)] = {}
-        taskBaselineFolder = baselineDataFiles + "/" + folderPrefix + str(index)
+        taskBaselineFolder = baselineDataFiles + "/" + folderPrefix + str(index) + seedSuffix
         if not os.path.isdir(taskBaselineFolder):
             continue
 
         taskBaselineDataFile = taskBaselineFolder + "/task_0_results.csv"
         baselineData = getResultsFromTaskFile(taskBaselineDataFile)
         gameData["task_" + str(index)]["baselineData"] = baselineData
+        gameData["task_" + str(index)]["baselineDataSummed"] = computeSummedData(baselineData)
+
 
     for arch in archs:
-        archDirectory = directory + "/" + gameFlavorString + "/" + arch + "/"
+        archDirectory = directory + "/" + gameFlavorString + "/" + arch + "/" + seedSuffix
         if not os.path.isdir(archDirectory):
             continue
 
-        for taskID in xrange(0,numTasks):
+        for taskID in xrange(len(modeOrDiffString)):
             archDataFile = archDirectory + "task_" + str(taskID) + "_results.csv"
             taskArchData = getResultsFromTaskFile(archDataFile)
-            gameData["task_" + str(taskID)][arch + "Data"] = taskArchData
+            gameData["task_" + str(modeOrDiffString[taskID])][arch + "Data"] = taskArchData
+            gameData["task_" + str(modeOrDiffString[taskID])][arch + "DataSummed"] = computeSummedData(taskArchData)
+
     return gameData
 
 
-def test():
-    # plotMultigameResults("resultsCompile1", "pong,breakout")
-    plotMultiModeResults("resultsCompile1", "hero_M0,1,2,3,4")
 
-def plotMultiModeResults(directory, gameModeString):
+
+def plotMultiModeResults(directory, gameModeString, plotSummedData = False, divideDataByNumTasks = False, pathToTaskResult = ""):
     gameModeStringComponents = gameModeString.split("_")
-    gameName = gameModeStringComponents[0]
-    modeOrDiffString = gameModeStringComponents[1].split(",")
+    gameName = gameModeStringComponents[0:-1]
+    modeOrDiffString = gameModeStringComponents[-1].split(",")
     folderPrefix = modeOrDiffString[0][0]
     modeOrDiffString[0] = modeOrDiffString[0][1:]
     numTasks = len(modeOrDiffString)
-    data = collectDataFromMultiFlavorExperiment(directory, gameModeString)
+    data = collectDataFromMultiFlavorExperiment(directory, gameModeString, pathToTaskResult)
+
+    if plotSummedData:
+        dataString = "DataSummed"
+        titleSuffix = "_Summed"
+    else:
+        dataString = "Data"
+        titleSuffix = ""
 
     for i in xrange(numTasks):
         fig = plt.figure(i + 1)
@@ -128,13 +147,20 @@ def plotMultiModeResults(directory, gameModeString):
         taskData = data["task_" + str(modeOrDiffString[i])]
 
         for arch in archs:
-            plt.plot(taskData[arch + "Data"][0], taskData[arch + "Data"][1], label=arch)
+            # plt.plot(taskData[arch + "Data"][0], taskData[arch + "Data"][1], label=arch)
+            if divideDataByNumTasks:
+                plt.plot([float(reducedData) / numTasks for reducedData in taskData[arch + dataString][0]], taskData[arch + dataString][1], label=arch)
+            else:
+                plt.plot(taskData[arch + dataString][0], taskData[arch + dataString][1], label=arch)
 
-        plt.plot(taskData["baselineData"][0], taskData["baselineData"][1], label="Baseline")
- 
+        if divideDataByNumTasks:
+            plt.plot(taskData["baseline" + dataString][0][0:200//numTasks], taskData["baseline" + dataString][1][0:200//numTasks], label="Baseline")
+        else:
+            plt.plot(taskData["baseline" + dataString][0], taskData["baseline" + dataString][1], label="Baseline")
+
         plt.xlabel('Epochs')
         plt.ylabel('Average Reward')
-        plt.title(gameName + " " + folderPrefix + str(modeOrDiffString[i]))
+        plt.title("_".join(gameName) + " " + folderPrefix + str(modeOrDiffString[i]) + titleSuffix)
         # plt.ylim([-0.5, 100])
         # plt.xlim([0, 200])
  
@@ -142,14 +168,21 @@ def plotMultiModeResults(directory, gameModeString):
         sub.set_position([box.x0, box.y0, box.width * 0.75, box.height])
         L = plt.legend(loc='center left', bbox_to_anchor=(1.00, 0.5), prop={'size':9})
         L.draggable(state=True)
-        fig.savefig(gameModeString + "_" + modeOrDiffString[i], dpi=fig.dpi)
+        fig.savefig(gameModeString + "_" + modeOrDiffString[i] + titleSuffix, dpi=fig.dpi)
 
     plt.show()
 
-def plotMultigameResults(directory, gameString):
+def plotMultigameResults(directory, gameString, plotSummedData = False, divideDataByNumTasks = False, pathToTaskResult = ""):
     games = gameString.split(",")
     numTasks = len(games)
-    data = collectDataFromMultigameExperiment(directory, gameString)
+    data = collectDataFromMultigameExperiment(directory, gameString, pathToTaskResult)
+
+    if plotSummedData:
+        dataString = "DataSummed"
+        titleSuffix = "_Summed"
+    else:
+        dataString = "Data"
+        titleSuffix = ""
 
     for i in xrange(numTasks):
         fig = plt.figure(i + 1)
@@ -157,13 +190,23 @@ def plotMultigameResults(directory, gameString):
         taskData = data["task_" + str(i)]
 
         for arch in archs:
-            plt.plot(taskData[arch + "Data"][0], taskData[arch + "Data"][1], label=arch)
+            # plt.plot(taskData[arch + "Data"][0], taskData[arch + "Data"][1], label=arch)
+            if divideDataByNumTasks:
+                plt.plot([float(reducedData) / numTasks for reducedData in taskData[arch + dataString][0]], taskData[arch + dataString][1], label=arch)
+            else:
+                plt.plot(taskData[arch + dataString][0], taskData[arch + dataString][1], label=arch)
 
-        plt.plot(taskData["baselineData"][0], taskData["baselineData"][1], label="Baseline")
+
+        if divideDataByNumTasks:
+            plt.plot(taskData["baseline" + dataString][0][0:200//numTasks], taskData["baseline" + dataString][1][0:200//numTasks], label="Baseline")
+        else:
+            plt.plot(taskData["baseline" + dataString][0], taskData["baseline" + dataString][1], label="Baseline")
+        # plt.plot(taskData["baselineData"][0], taskData["baselineData"][1], label="Baseline")
+
  
         plt.xlabel('Epochs')
         plt.ylabel('Average Reward')
-        plt.title(games[i])
+        plt.title(games[i] + titleSuffix)
         # plt.ylim([-0.5, 100])
         # plt.xlim([0, 200])
  
@@ -171,7 +214,7 @@ def plotMultigameResults(directory, gameString):
         sub.set_position([box.x0, box.y0, box.width * 0.75, box.height])
         L = plt.legend(loc='center left', bbox_to_anchor=(1.00, 0.5), prop={'size':9})
         L.draggable(state=True)
-        fig.savefig(gameString + "_" + games[i], dpi=fig.dpi)
+        fig.savefig(gameString + "_" + games[i] + titleSuffix, dpi=fig.dpi)
 
     plt.show()
 
@@ -385,31 +428,61 @@ def main(game=""):
     #plotResults('pong1.txt', 'Pong', 1)
     # plotResults('freeway2diff.txt', 'Freeway 2 Hard and Easy', 2)
  
-    if game == "boxing":
-        t = 4
-    elif game == "hero":
-        t = 5
-    elif game == "space_invaders":
-        t = 32
-    elif game == "freeway":
-        t = 16
-    elif game == "crazy_climbers":
-        t = 8
-    elif game =="pong,breakout":
-        t = 2
-    elif game == "space_invaders,demon_attack":
-        t = 2
-    elif game == "robotank,battlezone":
-        t = 2
-    else:
-        t = 1
+    # if game == "boxing":
+    #     t = 4
+    # elif game == "hero":
+    #     t = 5
+    # elif game == "space_invaders":
+    #     t = 32
+    # elif game == "freeway":
+    #     t = 16
+    # elif game == "crazy_climbers":
+    #     t = 8
+    # elif game =="pong,breakout":
+    #     t = 2
+    # elif game == "space_invaders,demon_attack":
+    #     t = 2
+    # elif game == "robotank,battlezone":
+    #     t = 2
+    # else:
+    #     t = 1
+    print game
+    sumData = True
+    reduced = True
+
+    if game == "1":
+        plotMultiModeResults("resCompile_4_13_2016", "hero_M0,1,2,3,4", sumData, reduced, "/seed_2/")
+
+        # plotMultiModeResults("resultsCompile2", "hero_M0,1,2,3,4", sumData, reduced)
+    elif game == "2":
+        plotMultiModeResults("resCompile_4_13_2016", "space_invaders_M0,6,7", sumData, reduced, "/seed_2/")
+    
+
+    elif game == "6":
+        plotMultiModeResults("resCompile_4_13_2016", "boxing_D0,1,2,3", sumData, reduced, "/seed_2/")
+    elif game == "7":
+        plotMultiModeResults("resCompile_4_13_2016", "freeway_D0,1", sumData, reduced, "/seed_2/")
+
+
+        # plotMultiModeResults("resultsCompile2", "space_invaders_M0,6,7", sumData, reduced)
+    elif game == "3":
+        plotMultigameResults("resCompile_4_13_2016", "pong,breakout", sumData, reduced, "/seed_1/")
+        # plotMultigameResults("resultsCompile1", "pong,breakout", sumData)
+    elif game == "4":
+        plotMultigameResults("resCompile_4_13_2016", "space_invaders,demon_attack,phoenix", sumData, reduced, "/seed_1/")
+        # plotMultigameResults("resultsCompile1", "space_invaders,demon_attack,phoenix", sumData)
+    elif game == "5":
+        plotMultigameResults("resCompile_4_13_2016", "demon_attack,phoenix", sumData, reduced, "/seed_1/")
+        # plotMultigameResults("resultsCompile1", "demon_attack,phoenix", sumData)
+
+    # plotMultigameResults("resultsCompile1", "pong,breakout")
+    # plotMultiModeResults("resultsCompile1", "hero_M0,1,2,3,4")
  
- 
-    # plotMultiGameTaskResults("multiGameResults/", game, 2)
- 
+
+
+    # plotMultiGameTaskResults("multiGameResults/", game, 2) 
     # plotMultiFlavorResults("freewayFlavorForMike/resultsOnly/", 16)
-    plotMultiFlavorResults("boxingFlavorForMike/resultsOnly/", "Boxing", 4)
- 
+    # plotMultiFlavorResults("boxingFlavorForMike/resultsOnly/", "Boxing", 4)
     # resultsString = "results.csv"
     # plotTaskResults("seededResults/"+ game + "/fullShare/" + resultsString, game + " Full Share", t)
     # plotTaskResults("seededResults/"+ game + "/layerShare/" + resultsString, game + " Layer Share", t)
@@ -418,4 +491,4 @@ def main(game=""):
  
  
 if __name__=="__main__":
-    main()
+    main(sys.argv[1])

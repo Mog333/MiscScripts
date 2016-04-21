@@ -111,13 +111,64 @@ def createTransferBaselineJobFiles(baseDirectory = 0, gameList = 0, modeList= 0,
                 jobFile.write(header + "\n\n" + theanoFlag + " " + command)
                 jobFile.close()
 
+# scripts.createExperimentLayout("/home/robpost/Desktop/MiscScripts/test/", "/home/robpost/Desktop/Research/ALE/roms", ["freeway", "assault,demon_attack"], [[('0','0'), ('0','1')],[('0;0','0;0')]], ["DQNNet", "PolicySwitchNet", "FirstRepresentationSwitchNet"], [1,2,3], "3:00:00:00", 100)
+def createExperimentLayout(baseDirectory, baseRomPath, gameList, flavorList, architectureList, seedList, walltime = "4:00:00:00", epochs = 200, createBaseline = False, deviceString="gpu"):
+    #gameList is a list of strings - each is a game or list of games
+    #flavorList is a list of lists, one for each game, list elements are tuples with two elements, mode and diff strings
+    #architectureList is a list of strings - one for each architecture to get run
+    #createBaseline is a bool - to create the baseline job files or not
+
+    #For each game in gamelist we will create a folder for that game/romstring
+    #inside are folders of format M~_D~ for each mode/diff string used 
+    #inside are folders for each architecture we wish to run this experiment with
+    #Inside the architecture folder is some number of seed folders
+    #Each seed folder is a project directory
+
+    #gameList: ["space_invaders,assault", "pong,breakout"]
+    #flavorString: [[('0;0', '0;0'), ('0,7;0', '0;0')],[('0;0', '0;0')]]
+
+    # archs = ["DQNNet", "PolicySwitchNet", "FirstRepresentationSwitchNet"]
+
+    gameIndex = 0
+    for game in gameList:
+        gameDir = baseDirectory + "/" + game
+        if not os.path.exists(gameDir):
+            os.makedirs(gameDir)
+        flavors = flavorList[gameIndex]
+
+        for flavor in flavors:
+            modeString = flavor[0]
+            diffString = flavor[1]
+            flavorDir = baseDirectory + "/" + game + "/M" + modeString + "_D" + diffString
+            if not os.path.exists(flavorDir):
+                os.makedirs(flavorDir)
+            for architecture in architectureList:
+                archDir = baseDirectory + "/" + game + "/M" + modeString + "_D" + diffString + "/" + architecture
+                if not os.path.exists(archDir):    
+                    os.makedirs(archDir)
+
+                for seed in seedList:
+                    projectDirectory = baseDirectory + "/" + game + "/M" + str(modeString) + "_D" + str(diffString) + "/" + architecture + "/seed_" + str(seed) + "/"
+                    if not os.path.exists(projectDirectory):
+                        os.makedirs(projectDirectory)
+                    jobFilename = str(game) + "_m_" + str(modeString) + "_d_" + str(diffString) + "_s_" + str(seed) + ".pbs"
+
+                    header = createPBSHeader(projectDirectory, walltime)
+                    theanoFlag = createTheanoFlagString(deviceString)
+                    command = createJobCommandString(projectDirectory, game, seed, epochs, baseRomPath, modeString, diffString)
+
+                    jobFile = open(projectDirectory + jobFilename, "w")
+                    jobFile.write(header + "\n\n" + theanoFlag + " " + command)
+                    jobFile.close()
 
 
+
+        gameIndex += 1
 
 
 def createPBSHeader(jobDirectory, walltime = "5:00:00:00"):
     text = "#PBS -S /bin/bash\n#PBS -A ntg-662-aa\n#PBS -l nodes=1:gpus=1\n#PBS -l walltime=" + walltime + "\n"
-    text+= "#PBS -M rpost@cs.ualberta.ca\n#PBS -m n\n#PBS -t 1\n"
+    text+= "#PBS -M rpost@cs.ualberta.ca\n#PBS -m bea\n"#PBS -t 1\n"
     text+= "#PBS -o " + jobDirectory + "jobOutput.txt\n"
     text+= "#PBS -e " + jobDirectory + "error.txt\n"
 
