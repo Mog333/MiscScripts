@@ -162,7 +162,6 @@ def createExperimentLayout(baseDirectory, baseRomPath, gameList, flavorList, arc
                     jobFile.close()
 
 
-
         gameIndex += 1
 
 
@@ -391,8 +390,28 @@ def main():
 
 
     # getBestResultsList(baseRomPath, projectDirectoryString + "dqnNewBaselines/", "seed_1/results.csv")
-    createTransferBaselineJobFiles()
+    # createTransferBaselineJobFiles()
     # getBestResultsList(baseRomPath, projectDirectoryString + "dqnNewBaselines/", "seed_1/results.csv")
+
+    createExperimentLayout(
+        "/gs/project/ntg-662-aa/RLRP/transfer3", 
+        "/home/rpost/roms", 
+        ["assault,demon_attack,space_invaders,phoenix", "enduro,demon_attack,pong,space_invaders", "enduro,pong,gopher,space_invaders"], 
+        [[('0;0;0;0','0;0;0;0')], [('0;0;0;0','0;0;0;0')], [('0;0;0;0','0;0;0;0')]] 
+        ["DQNNet", "PolicySwitchNet", "FirstRepresentationSwitchNet"], 
+        [1,2,3,4,5], 
+        "4:00:00:00", 200)
+
+    '''
+    createExperimentLayout(
+        "/gs/project/ntg-662-aa/RLRP/baselines3/", 
+        "/home/rpost/roms", 
+        ["assault","demon_attack","space_invaders","phoenix","enduro","pong","gopher"], 
+        [[('0','0')], [('0','0')], [('0','0')], [('0','0')], [('0','0')], [('0','0')], [('0','0')]]
+        ["DQNNet"], 
+        [1,2,3,4,5], 
+        "4:00:00:00", 100)
+    '''
 
 if __name__ == "__main__":
     main()
