@@ -112,7 +112,7 @@ def createTransferBaselineJobFiles(baseDirectory = 0, gameList = 0, modeList= 0,
                 jobFile.close()
 
 # scripts.createExperimentLayout("/home/robpost/Desktop/MiscScripts/test/", "/home/robpost/Desktop/Research/ALE/roms", ["freeway", "assault,demon_attack"], [[('0','0'), ('0','1')],[('0;0','0;0')]], ["DQNNet", "PolicySwitchNet", "FirstRepresentationSwitchNet"], [1,2,3], "3:00:00:00", 100)
-def createExperimentLayout(baseDirectory, baseRomPath, gameList, flavorList, architectureList, seedList, walltime = "4:00:00:00", epochs = 200, createBaseline = False, deviceString="gpu"):
+def createExperimentLayout(baseDirectory, baseRomPath, gameList, flavorList, architectureList, seedList, walltime = "4:00:00:00", epochs = 200, actionSet = 'minimal', deviceString="gpu"):
     #gameList is a list of strings - each is a game or list of games
     #flavorList is a list of lists, one for each game, list elements are tuples with two elements, mode and diff strings
     #architectureList is a list of strings - one for each architecture to get run
@@ -155,7 +155,7 @@ def createExperimentLayout(baseDirectory, baseRomPath, gameList, flavorList, arc
 
                     header = createPBSHeader(projectDirectory, walltime)
                     theanoFlag = createTheanoFlagString(deviceString)
-                    command = createJobCommandString(projectDirectory, game, seed, epochs, baseRomPath, modeString, diffString)
+                    command = createJobCommandString(projectDirectory, game, seed, epochs, baseRomPath, modeString, diffString, actionSet)
 
                     jobFile = open(projectDirectory + jobFilename, "w")
                     jobFile.write(header + "\n\n" + theanoFlag + " " + command)
@@ -178,13 +178,15 @@ def createTheanoFlagString(device="gpu"):
     return "THEANO_FLAGS='device=%s,floatX=float32,optimizer_including=cudnn'" %(device)
 
 
-def createJobCommandString(projectDirectoryString, rom, seed, epochs, baseRomPath, modeStr="", diffStr = ""):
+def createJobCommandString(projectDirectoryString, rom, seed, epochs, baseRomPath, modeStr="", diffStr = "", actionSet = 'minimal'):
     command = "python /home/rpost/RLRP/Base/runALEExperiment.py --networkType dnn " \
     + "--rom %s --baseRomPath %s " %(rom, baseRomPath) \
     + "--experimentDirectory %s " %(projectDirectoryString)  \
     + "--evaluationFrequency 1 --seed %s --numEpochs %s "%(seed, epochs) \
     + "--modeString %s --difficultyString %s " %(modeStr, diffStr)\
-    + "> " + projectDirectoryString + "/experimentOutput.txt"
+    + "> " + projectDirectoryString + "/experimentOutput.txt" \
+    + " --actionSet " + actionSet
+
     return command
 
 # def createEvaluationPBSFile(projectDirectoryString, romName, baseRomPath):
@@ -356,7 +358,7 @@ def getCompiledResultsFolder(projectDirectoryString, outputPath):
 
     for file in resFiles:
     	print "file:\t"+file
-        newPath = outputPath + "/" file[0:file.rfind("/")]
+        newPath = outputPath + "/" + file[0:file.rfind("/")]
         print "newpath:\t" + newPath
         if not os.path.isdir(newPath):
             os.makedirs(newPath)
@@ -364,7 +366,7 @@ def getCompiledResultsFolder(projectDirectoryString, outputPath):
         newFilename = outputPath + "/" + file
         print "filetocopy:\t"+fileToCopy
         print "newfilename:\t"+newFilename
-        # copyfile(fileToCopy, newFilename)
+        copyfile(fileToCopy, newFilename)
 
 
 
@@ -392,26 +394,27 @@ def main():
     # getBestResultsList(baseRomPath, projectDirectoryString + "dqnNewBaselines/", "seed_1/results.csv")
     # createTransferBaselineJobFiles()
     # getBestResultsList(baseRomPath, projectDirectoryString + "dqnNewBaselines/", "seed_1/results.csv")
-
+    getCompiledResultsFolder("/sb/scratch/rpost/transferGames/", "/sb/scratch/rpost/transferGamesCompiled/")
+    '''
     createExperimentLayout(
-        "/gs/project/ntg-662-aa/RLRP/transfer3", 
+        "/sb/scratch/rpost/transferGames", 
         "/home/rpost/roms", 
         ["assault,demon_attack,space_invaders,phoenix", "enduro,demon_attack,pong,space_invaders", "enduro,pong,gopher,space_invaders"], 
-        [[('0;0;0;0','0;0;0;0')], [('0;0;0;0','0;0;0;0')], [('0;0;0;0','0;0;0;0')]] 
+        [[('0^0^0^0','0^0^0^0')], [('0^0^0^0','0^0^0^0')], [('0^0^0^0','0^0^0^0')]], 
         ["DQNNet", "PolicySwitchNet", "FirstRepresentationSwitchNet"], 
         [1,2,3,4,5], 
         "4:00:00:00", 200)
-
-    '''
+    
+    
     createExperimentLayout(
-        "/gs/project/ntg-662-aa/RLRP/baselines3/", 
+        "/sb/scratch/rpost/transferBaselinesFull/", 
         "/home/rpost/roms", 
         ["assault","demon_attack","space_invaders","phoenix","enduro","pong","gopher"], 
-        [[('0','0')], [('0','0')], [('0','0')], [('0','0')], [('0','0')], [('0','0')], [('0','0')]]
+        [[('0','0')], [('0','0')], [('0','0')], [('0','0')], [('0','0')], [('0','0')], [('0','0')]],
         ["DQNNet"], 
         [1,2,3,4,5], 
-        "4:00:00:00", 100)
-    '''
+        "4:00:00:00", 100, 'full')
+     '''   
 
 if __name__ == "__main__":
     main()
