@@ -427,7 +427,7 @@ def writeDataToFile(filename, xData, yData, stdDevData, delimiter = ','):
 
 
 
-def main():
+def main(args):
     resultCollectionFunction = lambda f: getResultsFromTaskFile(f, 0, 3, -1)
     computeAverageOverMultipleSeeds("testSeedAvg", resultsFunction= resultCollectionFunction)
 
@@ -437,7 +437,7 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
 
 
 

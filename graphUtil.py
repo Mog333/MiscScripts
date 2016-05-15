@@ -199,7 +199,7 @@ def moveFoldersUp(baseFolder, folderToDelete):
             shutil.move(baseFolder + "/" + f + "/" + folderToDelete +"/"+ f2, baseFolder + "/" +f)
         shutil.rmtree(baseFolder + "/" + f + "/" + folderToDelete)
 
-def main(t):
+def main(args):
     # test("transferBaselinesCompiled/")
     # test2("transferBaselinesCompiled/pong/DQNNet/task_0_results_Avg.csv", "Pong")
     # test("transferBaselinesFullCompiled/")
@@ -210,8 +210,10 @@ def main(t):
     # writeAvgResultFiles("transferBaselinesCompiled/", ["DQNNet"], True)
     # writeAvgResultFiles("transferGamesCompiled/", ["DQNNet", "FirstRepresentationSwitchNet", "PolicySwitchNet"], True)
     # return
-
-    t = int(t)
+    if len(args) > 0:
+        t = int(args[0])
+    else:
+        t = 0
 
     if t == 0:
         createExperimentDataSeries("transferGamesCompiled/", "transferBaselinesCompiled", "assault,demon_attack,space_invaders,phoenix", False)
@@ -223,7 +225,7 @@ def main(t):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(sys.argv[1:])
 
 
 
