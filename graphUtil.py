@@ -15,6 +15,7 @@ class DataSeries(object):
         self.name       = name
 
 
+colors = iter(matplotlib.cm.rainbow(np.linspace(0, 1, 3)))
 
 def plotDataSeries(figureNumber, dataSeriesList, title, xLabel = "Epochs", yLabel = "Average Reward", saveFigure = ""):
 
@@ -23,6 +24,7 @@ def plotDataSeries(figureNumber, dataSeriesList, title, xLabel = "Epochs", yLabe
     sub = plt.subplot(111)
 
     for dataSeries in dataSeriesList:
+        # plt.errorbar(dataSeries.xData, dataSeries.yData, dataSeries.stdDevData,label=dataSeries.name, color=next(colors))
         plt.errorbar(dataSeries.xData, dataSeries.yData, dataSeries.stdDevData,label=dataSeries.name)
 
 
@@ -42,11 +44,6 @@ def plotDataSeries(figureNumber, dataSeriesList, title, xLabel = "Epochs", yLabe
 
 
 
-
-
-
-
-
 def writeAvgResultFiles(directory, extensionList, sumData = False):
     resultCollectionFunction = lambda f: getResultsFromTaskFile(f, 0, 3, -1)
 
@@ -58,6 +55,76 @@ def writeAvgResultFiles(directory, extensionList, sumData = False):
 
             for i in xrange(len(masterData)):
                 writeDataToFile(seedsDirectory +"task_"+str(i)+"_results_Avg.csv",masterData[i][0], masterData[i][1], masterData[i][2])
+
+
+
+
+def createComparisonDataSeries(directory, romStringList, taskIDList, taskPrefixList, extensionList, baselineDirectory, divided = True):
+    #romStringList, taskIDList and taskPrefixList must be of the same size
+    if len(romStringList) != len(taskIDList) and len(taskIDList) != len(taskPrefixList):
+        raise Exception("Lists are not of equal size cant parse data properly")
+
+    counter = 0
+    gameDict = {}
+    minNumTasks = -1
+    maxNumTasks = float('inf')
+    gameTitle = romStringList[0].split(',')[taskIDList[0]]
+
+    for g in xrange(len(taskPrefixList)):
+        gameDict[g] = {}
+
+        
+    for romString in romStringList:
+        pathToArchs = (directory + "/" + romString)
+        games = romString.split(",")
+        numTasksinRomString = len(games)
+
+        if numTasksinRomString > minNumTasks:
+            minNumTasks = numTasksinRomString
+        if numTasksinRomString > maxNumTasks:
+            maxNumTasks = numTasksinRomString
+
+        for arch in extensionList:
+            archDirectory = pathToArchs + "/" + arch
+            taskID = taskIDList[counter]
+            taskFile = "/task_" + str(taskID) + "_results_Avg.csv"
+            gameDict[counter][arch] = getResultsFromTaskFile(archDirectory + "/" + taskFile)
+
+            if divided:
+                    gameDict[counter][arch][0] = divideDataElementsByFactor(gameDict[counter][arch][0], numTasksinRomString)
+
+        counter += 1
+
+
+    baselineFile = baselineDirectory + "/" + gameTitle + "/DQNNet/task_0_results_Avg.csv"
+    gameDict["baseline"] = getResultsFromTaskFile(baselineFile)
+
+    if divided:       
+        numDataPointsToUse = int(len(gameDict["baseline"][0]) / (minNumTasks / 2))
+        gameDict["baseline"][0] = gameDict["baseline"][0][0:numDataPointsToUse]
+        gameDict["baseline"][1] = gameDict["baseline"][1][0:numDataPointsToUse]
+        gameDict["baseline"][2] = gameDict["baseline"][2][0:numDataPointsToUse]
+
+
+
+    taskDataSeriesList = []
+    baselineDataSeries = DataSeries(gameDict["baseline"][0], gameDict["baseline"][1], gameDict["baseline"][2], gameTitle + "_Baseline")
+
+    counter = 0
+    plotcount = 1
+    for romString in romStringList:
+        for arch in extensionList:
+            currentArchDataSeries = DataSeries(gameDict[counter][arch][0], gameDict[counter][arch][1], gameDict[counter][arch][2], taskPrefixList[counter] + "_" + arch)
+            taskDataSeriesList.append(currentArchDataSeries)
+        counter += 1
+
+    taskDataSeriesList.append(baselineDataSeries)
+
+    plotDataSeries(plotcount, taskDataSeriesList, gameTitle + "_" + ",".join(extensionList)+"_GameComparison", saveFigure = directory + "/" + gameTitle + "_" + ",".join(extensionList)+"_GameComparison")
+    plt.show()
+
+
+
 
 
 def createExperimentDataSeries(directory, baselineDirectory, romString, summed = True, divided = True):
@@ -186,12 +253,6 @@ def test4(directory1, directory2, summed = True):
     plt.show()
 
 
-def test5(directory):
-    pass
-
-
-
-
 #folderToDelete = "/M0^0^0^0_D0^0^0^0"
 def moveFoldersUp(baseFolder, folderToDelete):
     for f in os.listdir(baseFolder):
@@ -204,23 +265,46 @@ def main(args):
     # test2("transferBaselinesCompiled/pong/DQNNet/task_0_results_Avg.csv", "Pong")
     # test("transferBaselinesFullCompiled/")
     # test3("transferBaselinesCompiled/")
-    
     # test4("transferBaselinesCompiled/", "transferBaselinesFullCompiled/")
 
-    # writeAvgResultFiles("transferBaselinesCompiled/", ["DQNNet"], True)
-    # writeAvgResultFiles("transferGamesCompiled/", ["DQNNet", "FirstRepresentationSwitchNet", "PolicySwitchNet"], True)
+
+
+
+    # writeAvgResultFiles("../compiledResults/dqnFullBaselineResult/", ["DQNNet"], True)
+    # writeAvgResultFiles("../compiledResults/dqnMinBaselineResult/", ["DQNNet"], True)
+    # writeAvgResultFiles("../compiledResults/transferMultigameResult/", ["DQNNet", "FirstRepresentationSwitchNet", "PolicySwitchNet"], True)
     # return
+
+    # romStringList = ["assault,demon_attack,space_invaders,phoenix", "enduro,demon_attack,pong,space_invaders", "enduro,pong,gopher,space_invaders"]
+    # romStringList = ["assault,demon_attack,space_invaders,phoenix", "enduro,demon_attack,pong,space_invaders"]
+    romStringList = ["enduro,demon_attack,pong,space_invaders", "enduro,pong,gopher,space_invaders"]
+    taskIDList = [0, 0]
+    # taskPrefixList = ["4Similar", "2Similar", "NonSimilar"]
+
+    taskPrefixList = ["2Similar", "NonSimilar"]
+    # taskPrefixList = ["4Similar", "2Similar", "NonSimilar"]
+
+    extensionList = ["DQNNet", "FirstRepresentationSwitchNet", "PolicySwitchNet"]
+    # extensionList = ["DQNNet"]
+    # extensionList = ["PolicySwitchNet"]
+    # extensionList = ["FirstRepresentationSwitchNet"]
+
+
+    baselineDirectory = "../compiledResults/dqnMinBaselineResult/"
+    createComparisonDataSeries("../compiledResults/transferMultigameResult", romStringList, taskIDList, taskPrefixList, extensionList, baselineDirectory, divided = True)
+    return
+
     if len(args) > 0:
         t = int(args[0])
     else:
         t = 0
 
     if t == 0:
-        createExperimentDataSeries("transferGamesCompiled/", "transferBaselinesCompiled", "assault,demon_attack,space_invaders,phoenix", False)
+        createExperimentDataSeries("../compiledResults/transferMultigameResult/", "../compiledResults/dqnMinBaselineResult/", "assault,demon_attack,space_invaders,phoenix", False)
     elif t == 1:
-        createExperimentDataSeries("transferGamesCompiled/", "transferBaselinesCompiled", "enduro,demon_attack,pong,space_invaders", False)
+        createExperimentDataSeries("../compiledResults/transferMultigameResult/", "../compiledResults/dqnMinBaselineResult/", "enduro,demon_attack,pong,space_invaders", False)
     elif t == 2:
-        createExperimentDataSeries("transferGamesCompiled/", "transferBaselinesCompiled", "enduro,pong,gopher,space_invaders", False)
+        createExperimentDataSeries("../compiledResults/transferMultigameResult/", "../compiledResults/dqnMinBaselineResult/", "enduro,pong,gopher,space_invaders", False)
 
 
 
