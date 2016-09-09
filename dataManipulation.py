@@ -76,7 +76,6 @@ def getResultsFromTaskFile(filename, xColumn = 0, yColumn = 1, stdDevColumn = 2,
     return [epochs, rewards, rewardStdDevs]
 
 
-
 def computeSummedData(data):
     '''
     Arguments:
@@ -114,7 +113,6 @@ def divideDataElementsByFactor(data, factor):
         newData[index] = data[index] / factor
 
     return newData
-
 
 
 def getBestEpochOfResults(resultsTuple):
@@ -172,7 +170,6 @@ def getALEGameList(baseRomPath, removeExtension = True):
     return gameList
 
 
-
 def getHighestNetworkFileEpoch(projectDirectory):
     '''
     Arguments:
@@ -203,7 +200,6 @@ def getHighestNetworkFileEpoch(projectDirectory):
             highestNum = num
 
     return highestNum
-
 
 
 def getBestProjectResults(directory, taskNumber = 0, resultsFunction = getResultsFromTaskFile):
@@ -241,11 +237,6 @@ def getBestProjectResults(directory, taskNumber = 0, resultsFunction = getResult
         resultString += '{:<40}'.format(str(key) + ",") 
         resultString += str(gameDict[key][1]) + " at epoch: " + str(gameDict[key][0]) 
     return resultString
-
-
-
-
-
 
 
 def copyCompiledResultsFolder(directory, outputPath, justPrint = False):
@@ -425,11 +416,41 @@ def writeDataToFile(filename, xData, yData, stdDevData, delimiter = ','):
 
     f.close()
 
+def createSummedDataFile(sourceFile, resultsCollectionFunction = getResultsFromTaskFile):
+    '''
+    Arguments:
+        sourceFile:   (string)
+            file to collect experiment data from
+
+        resultsCollectionFunction:  (function)
+                Function takes one argument: (string) which is a path to a results file
+                returns a list of three lists with x,y,stddev data
+                example:
+                    resultCollectionFunction = lambda f: getResultsFromTaskFile(f, 0, 3, -1)
+
+    Description:
+        reads the x/y data of a results file in columns, 
+        computes the summed data ( each y value is the sum of all previous y values),
+        writes the resulting summed data to a file
+            file name is sourceFile with _Summmed suffix before file extension
+    '''
+
+    startFilenameIndex  = sourceFile.rindex("/")
+    sourceFileDirectory = sourceFile[0: startFilenameIndex + 1 ]
+    sourceFilename      = sourceFile[startFilenameIndex + 1 : ]
+    sourceExtensionIndex= sourceFilename.rindex(".")
+    destinationFilename = sourceFileDirectory + sourceFilename[0:sourceExtensionIndex] + "_Summed" + sourceFilename[sourceExtensionIndex : ]
+    
+    results = resultsCollectionFunction(sourceFile)
+    results[1] = computeSummedData(results[1])
+    writeDataToFile(destinationFilename, results[0], results[1], None)
 
 
 def main(args):
     resultCollectionFunction = lambda f: getResultsFromTaskFile(f, 0, 3, -1)
-    computeAverageOverMultipleSeeds("testSeedAvg", resultsFunction= resultCollectionFunction)
+    createSummedDataFile(args[0], resultCollectionFunction)
+
+    # computeAverageOverMultipleSeeds("testSeedAvg", resultsFunction= resultCollectionFunction)
 
 
 
