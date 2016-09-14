@@ -44,17 +44,17 @@ def plotDataSeries(figureNumber, dataSeriesList, title, xLabel = "Epochs", yLabe
 
 
 
-def writeAvgResultFiles(directory, extensionList, sumData = False):
-    resultCollectionFunction = lambda f: getResultsFromTaskFile(f, 0, 3, -1)
+# def writeAvgResultFiles(directory, extensionList, sumData = False):
+#     resultCollectionFunction = lambda f: getResultsFromTaskFile(f, 0, 3, -1)
 
-    for item in os.listdir(directory):
-        for extension in extensionList:
+#     for item in os.listdir(directory):
+#         for extension in extensionList:
 
-            seedsDirectory = directory + "/" + item + "/" + extension + "/"
-            masterData = computeAverageOverMultipleSeeds(seedsDirectory, sumData, resultCollectionFunction)
+#             seedsDirectory = directory + "/" + item + "/" + extension + "/"
+#             masterData = computeAverageOverMultipleSeeds(seedsDirectory, sumData, resultCollectionFunction)
 
-            for i in xrange(len(masterData)):
-                writeDataToFile(seedsDirectory +"task_"+str(i)+"_results_Avg.csv",masterData[i][0], masterData[i][1], masterData[i][2])
+#             for i in xrange(len(masterData)):
+#                 writeDataToFile(seedsDirectory +"task_"+str(i)+"_results_Avg.csv",masterData[i][0], masterData[i][1], masterData[i][2])
 
 
 
