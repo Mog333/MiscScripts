@@ -545,6 +545,69 @@ def createAveragedResultsFilesForDirectory(directory, resultFileNames = ["task_0
 
 
 
+
+
+
+def calculateBestEpochForMultitaskExperiment(experimentDirectory, numBestEpochsToReturn = 1, resultsCollectionFunction = getResultsFromTaskFile, taskWeightingArray = None):
+    contents = os.listdir(experimentDirectory)
+    taskFiles = sorted([file for file in contents if ("task_" in file and ".csv" in file and ".~" not in file)])
+    numTasks = len(taskFiles)
+
+    if taskWeightingArray == None:
+        taskWeightingArray = [1] * numTasks
+    elif len(taskWeightingArray) != numTasks:
+        print("TaskWeightingArray Paramater has length different than expected. Num weights: " + str(len(taskWeightingArray)) + " Num tasks: " + str(numTasks))
+        return
+
+    allTasksInfo = {}
+
+    currentTaskNumber = 0
+    for taskFile in taskFiles:
+        allTasksInfo[currentTaskNumber] = {}
+        taskFilePath = experimentDirectory + "/" + taskFile
+        results = resultsCollectionFunction(taskFilePath)
+
+        bestEpoch,bestAverageReward = getBestEpochOfResults(results)
+        
+        allTasksInfo[currentTaskNumber]["resultsTuple"] = results
+        allTasksInfo[currentTaskNumber]["bestAverageReward"] = bestAverageReward
+        allTasksInfo[currentTaskNumber]["bestEpoch"] = bestEpoch        
+        allTasksInfo[currentTaskNumber]["numEpochs"] = len(results[0])
+        currentTaskNumber += 1
+
+    numEpochs = allTasksInfo[0]["numEpochs"]
+    for taskInfoKey in allTasksInfo:
+        if allTasksInfo[taskInfoKey]["numEpochs"] != numEpochs:
+            print("Two tasks have different number of epochs!")
+            return
+
+    rewardWeightedData = []
+    for rowIndex in xrange(numEpochs):
+        currentEpochRewardWeighting = 0
+        for taskIndex in xrange(numTasks):
+            currentEpochRewardWeighting += taskWeightingArray[taskIndex] * (allTasksInfo[taskIndex]["resultsTuple"][1][rowIndex] / allTasksInfo[taskIndex]["bestAverageReward"])
+        print currentEpochRewardWeighting
+        rewardWeightedData.append([allTasksInfo[taskIndex]["resultsTuple"][0][rowIndex], currentEpochRewardWeighting])
+
+    rewardWeightedData.sort(key = lambda element: element[1])
+    bestEpochAndReward = rewardWeightedData[numEpochs - numBestEpochsToReturn:]
+
+    returnDict = {}
+    returnDict["bestPerTaskEpochData"] = []
+    returnDict["bestMultitaskEpochData"] = bestEpochAndReward
+    
+    for taskIndex in xrange(numTasks):
+        returnDict["bestPerTaskEpochData"].append([ allTasksInfo[taskIndex]["bestEpoch"], allTasksInfo[taskIndex]["bestAverageReward"] ])
+
+    return returnDict
+
+
+
+
+
+
+
+
 def function1():
     '''
     Create averaged files for both normal and summed data over multiple seeds
@@ -578,6 +641,22 @@ def function1():
     createAveragedResultsFilesForDirectory("/home/robert/Desktop/Research/DTQN/compiledResults/transferBaselinesDisjoint", result4TaskFileNames, resultsCollectionFunction)
     createAveragedResultsFilesForDirectory("/home/robert/Desktop/Research/DTQN/compiledResults/transferBaselinesDisjoint", result4TaskFileNamesSummed, resultsCollectionFunctionSummed)
 
+
+
+
+def function2():
+    resultCollectionFunction = lambda f: getResultsFromTaskFile(f, 0, 3, -1)
+    # computeAverageOverMultipleSeeds("testSeedAvg", resultsFunction= resultCollectionFunction)
+    d = calculateBestEpochForMultitaskExperiment("/home/robpost/Desktop/Research/MiscScripts/test/multitaskDataTest/", numBestEpochsToReturn = 3, resultsCollectionFunction = resultCollectionFunction, taskWeightingArray = [1,1,50,1])
+    print(d["bestPerTaskEpochData"])
+    print("\n\n\n")
+    print(d["bestMultitaskEpochData"])
+
+
+
+
+
+
 def main(args):
     resultsCollectionFunction        = lambda f: getResultsFromTaskFile(f, 0, 3, -1)
     resultsCollectionFunctionSummed  = lambda f: getResultsFromTaskFile(f, 0, 1, -1)
@@ -590,15 +669,11 @@ def main(args):
     # resultFileNames = findResultsFiles("/home/robert/Desktop/Research/DTQN/compiledResults/transferMultigameResult/enduro^pong^gopher^space_invaders/DQNNet/seed_1", condition)
     # resultFileNamesSummed = findResultsFiles("test/seed_1/", conditionSummed)
 
-
     # createSummedDataFile(args[0], resultsCollectionFunction)
     # computeAverageOverMultipleSeeds("testSeedAvg", resultsCollectionFunction= resultsCollectionFunction)
 
-
     # writeAveragedDataFileOverMultipleSeeds("test/", resultFileNames, resultsCollectionFunction)
     # writeAveragedDataFileOverMultipleSeeds("test/", resultFileNamesSummed, resultsCollectionFunctionSummed)
-
-    
 
     # projectSeedDirs = createAveragedResultsFilesForDirectory("/home/robert/Desktop/Research/DTQN/compiledResults/transferMultigameResult")
     # for i in projectSeedDirs:
