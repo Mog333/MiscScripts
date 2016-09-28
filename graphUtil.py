@@ -15,6 +15,23 @@ class DataSeries(object):
         self.name       = name
 
 
+class PlotWrapper(object):
+    def __init__(self, dataSeriesList = [], title, xLabel, yLabel):
+        self.dataSeriesList = dataSeriesList
+        self.title = title
+        self.xLabel = xLabel
+        self.yLabel = yLabel
+
+
+    def addDataSeries(dataSeries):
+        self.dataSeriesList.append(dataSeries)
+
+    def saveToFile(filename):
+        pass
+
+    def createPlot():
+        
+
 colors = iter(matplotlib.cm.rainbow(np.linspace(0, 1, 3)))
 
 def plotDataSeries(figureNumber, dataSeriesList, title, xLabel = "Epochs", yLabel = "Average Reward", saveFigure = ""):
@@ -39,22 +56,6 @@ def plotDataSeries(figureNumber, dataSeriesList, title, xLabel = "Epochs", yLabe
     if saveFigure != "":
         fig.savefig(saveFigure, dpi=fig.dpi)
 
-
-
-
-
-
-# def writeAvgResultFiles(directory, extensionList, sumData = False):
-#     resultCollectionFunction = lambda f: getResultsFromTaskFile(f, 0, 3, -1)
-
-#     for item in os.listdir(directory):
-#         for extension in extensionList:
-
-#             seedsDirectory = directory + "/" + item + "/" + extension + "/"
-#             masterData = computeAverageOverMultipleSeeds(seedsDirectory, sumData, resultCollectionFunction)
-
-#             for i in xrange(len(masterData)):
-#                 writeDataToFile(seedsDirectory +"task_"+str(i)+"_results_Avg.csv",masterData[i][0], masterData[i][1], masterData[i][2])
 
 
 
@@ -259,6 +260,26 @@ def moveFoldersUp(baseFolder, folderToDelete):
         for f2 in os.listdir(baseFolder + "/" + f + folderToDelete):
             shutil.move(baseFolder + "/" + f + "/" + folderToDelete +"/"+ f2, baseFolder + "/" +f)
         shutil.rmtree(baseFolder + "/" + f + "/" + folderToDelete)
+
+
+
+
+def getFilenameFromPath(pathToFile):
+    lastSlash = pathToFile.rindex("/")
+    return pathToFile[lastSlash + 1:]
+
+def getFilenameWithoutExtension(filename):
+    extensionStart = filename.rindex(".")
+    return filename[:extensionStart]
+
+def plotSingleResultFile(pathToFile, resultsCollectionFunction, saveToName = None):
+    results = resultsCollectionFunction(pathToFile)
+
+    strippedFileName = getFilenameWithoutExtension(getFilenameFromPath(pathToFile))
+
+    resultsDataSeries = DataSeries(results[0], results[1], results[2], strippedFileName)
+
+
 
 def main(args):
     # test("transferBaselinesCompiled/")
