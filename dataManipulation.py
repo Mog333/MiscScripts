@@ -8,6 +8,37 @@ import numpy as np
 
 reAlphabet = re.compile("[a-zA-Z]")
 
+def moveFoldersUp(baseFolder, folderToDelete):
+    for f in os.listdir(baseFolder):
+        for f2 in os.listdir(baseFolder + "/" + f + folderToDelete):
+            shutil.move(baseFolder + "/" + f + "/" + folderToDelete +"/"+ f2, baseFolder + "/" +f)
+        shutil.rmtree(baseFolder + "/" + f + "/" + folderToDelete)
+
+def getFilenameFromPath(pathToFile):
+    lastSlash = pathToFile.rindex("/")
+    return pathToFile[lastSlash + 1:]
+
+def getFilenameWithoutExtension(filename):
+    extensionStart = filename.rindex(".")
+    return filename[:extensionStart]
+
+def divideDataElementsByFactor(data, factor):
+    '''
+    Arguments:
+        data:   (numpy list of floats)
+        factor: (float)
+            float to divide each element in data by
+    Returns:
+        a numpy array of the same dimensions as the input 
+        inwhich each element is divided by a factor
+    '''
+    newData = np.empty_like(data)
+
+    for index in xrange(len(data)):
+        newData[index] = data[index] / factor
+
+    return newData
+
 
 def getResultsFromTaskFile(filename, xColumn = 0, yColumn = 1, stdDevColumn = 2, dataDelimiter = ','):
     '''
@@ -468,7 +499,7 @@ def createSummedDataFile(sourceFile, resultsCollectionFunction = getResultsFromT
                 Function takes one argument: (string) which is a path to a results file
                 returns a list of three lists with x,y,stddev data
                 example:
-                    resultCollectionFunction = lambda f: getResultsFromTaskFile(f, 0, 3, -1)
+                    resultsCollectionFunction = lambda f: getResultsFromTaskFile(f, 0, 3, -1)
 
     Description:
         reads the x/y data of a results file in columns, 
@@ -645,9 +676,9 @@ def function1():
 
 
 def function2():
-    resultCollectionFunction = lambda f: getResultsFromTaskFile(f, 0, 3, -1)
-    # computeAverageOverMultipleSeeds("testSeedAvg", resultsFunction= resultCollectionFunction)
-    d = calculateBestEpochForMultitaskExperiment("/home/robpost/Desktop/Research/MiscScripts/test/multitaskDataTest/", numBestEpochsToReturn = 3, resultsCollectionFunction = resultCollectionFunction, taskWeightingArray = [1,1,50,1])
+    resultsCollectionFunction = lambda f: getResultsFromTaskFile(f, 0, 3, -1)
+    # computeAverageOverMultipleSeeds("testSeedAvg", resultsFunction= resultsCollectionFunction)
+    d = calculateBestEpochForMultitaskExperiment("/home/robpost/Desktop/Research/MiscScripts/test/multitaskDataTest/", numBestEpochsToReturn = 3, resultsCollectionFunction = resultsCollectionFunction, taskWeightingArray = [1,1,50,1])
     print(d["bestPerTaskEpochData"])
     print("\n\n\n")
     print(d["bestMultitaskEpochData"])
