@@ -149,7 +149,10 @@ def createExperimentLayout(baseDirectory, baseRomPath, jobScriptPath, gameList, 
             os.makedirs(gameDir)
 
         for architecture in architectureList:
-            archDir = gameDir + "/" + architecture
+            if "--disjointDQN True" in jobOptions:
+                archDir = gameDir + "/" + "disjoint"+ architecture
+            else:
+                archDir = gameDir + "/" + architecture
             if not os.path.exists(archDir):    
                 os.makedirs(archDir)
 
@@ -157,7 +160,10 @@ def createExperimentLayout(baseDirectory, baseRomPath, jobScriptPath, gameList, 
                 projectDirectory = archDir + "/seed_" + str(seed) + "/"
                 if not os.path.exists(projectDirectory):
                     os.makedirs(projectDirectory)
-                jobFilename = str(game) + "_a_" + architecture + "_s_" + str(seed) + ".pbs"
+                if "--disjointDQN True" in jobOptions:
+                    jobFilename = str(game) + "_a_disjoint" + architecture + "_s_" + str(seed) + ".pbs"
+                else:
+                    jobFilename = str(game) + "_a_" + architecture + "_s_" + str(seed) + ".pbs"
 
                 header     = createPBSHeader(projectDirectory, walltime)
                 theanoFlag = createTheanoFlagString(deviceString, forceCUDNN)
@@ -173,10 +179,14 @@ def createExperimentLayout(baseDirectory, baseRomPath, jobScriptPath, gameList, 
 
 
 def main(args):
-    createExperimentLayout( "/home/robpost/Desktop/Research/MiscScripts/test",  "/home/robpost/Desktop/ALE/roms", "/home/robpost/Desktop/Research/RLRP/base/runALEExperiment.py", ["assault^demon_attack^space_invaders:(0,0)#(1,7)"], ["DQNNet", "PolicySwitchNet", "FirstRepresentationSwitchNet"], [1,2], 'conv', "4:00:00:00", 200, "cpu", False, ['--disjointDQN True'])
+    #createExperimentLayout( "/home/robpost/Desktop/Research/MiscScripts/test",  "/home/robpost/Desktop/ALE/roms", "/home/robpost/Desktop/Research/RLRP/base/runALEExperiment.py", ["assault^demon_attack^space_invaders:(0,0)#(1,7)"], ["DQNNet", "PolicySwitchNet", "FirstRepresentationSwitchNet"], [1,2], 'conv', "4:00:00:00", 200, "cpu", False, ['--disjointDQN True'])
+
+    #createExperimentLayout( "/gs/project/ntg-662-aa/AlternateDQN",  "/home/rpost/roms", "/home/rpost/RLRP/Base/runALEExperiment.py", ["space_invaders", "pong", "freeway","breakout"], ["DQNAlternateNet", "DQNAlternate2Net"], [1], 'dnn', "4:00:00:00", 100, "gpu", True)
+
+    #createExperimentLayout( "/gs/project/ntg-662-aa/20EpochTransfer",  "/home/rpost/roms", "/home/rpost/RLRP/Base/runALEExperiment.py", ["assault^demon_attack^space_invaders", "enduro^pong^gopher^space_invaders", "enduro^demon_attack^pong^space_invaders"], ["DQNNet", "PolicySwitchNet", "FirstRepresentationSwitchNet"], [1,2,3,4,5,6,7,8,9,10], 'dnn', "1:00:00:00", 20, "gpu", True)
 
 
-
+    createExperimentLayout( "/gs/project/ntg-662-aa/20EpochTransfer",  "/home/rpost/roms", "/home/rpost/RLRP/Base/runALEExperiment.py", ["assault^demon_attack^space_invaders", "enduro^pong^gopher^space_invaders", "enduro^demon_attack^pong^space_invaders"], ["DQNNet"], [1,2,3,4,5,6,7,8,9,10], 'dnn', "2:00:00:00", 20, "gpu", True, [])
 
 if __name__ == "__main__":
     main(sys.argv[1:])
