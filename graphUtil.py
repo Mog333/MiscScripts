@@ -49,6 +49,8 @@ class PlotWrapper(object):
                 tValue      = stats.t.ppf(1-alpha, numSamples - 1)
 
                 plt.errorbar(dataSeries.xData, dataSeries.yData, dataSeries.stdDevData * tValue / math.sqrt(numSamples) ,label=dataSeries.name, color=next(colors))
+                #plt.errorbar(dataSeries.xData, dataSeries.yData, dataSeries.stdDevData*1.96,label=dataSeries.name, color=next(colors))
+                # plt.errorbar(dataSeries.xData, dataSeries.yData, [dataSeries.stdDevData * 0.69, dataSeries.stdDevData * 1.83],label=dataSeries.name, color=next(colors))
             else:
                 plt.errorbar(dataSeries.xData, dataSeries.yData, None,label=dataSeries.name, color=next(colors))
 
@@ -469,6 +471,14 @@ def main(args):
     # extensionList = ["PolicySwitchNet"]
     # extensionList = ["FirstRepresentationSwitchNet"]
 
+    # createExperimentDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", "/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/DqnBaselines", "assault^demon_attack^space_invaders^phoenix", summed = False, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
+    # createExperimentDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", "/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/DqnBaselines", "enduro^demon_attack^pong^space_invaders", summed = False, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
+    # createExperimentDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", "/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/DqnBaselines", "enduro^pong^gopher^space_invaders", summed = False, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
+
+    # createExperimentDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", "/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/DqnBaselines", "assault^demon_attack^space_invaders^phoenix", summed = True, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
+    # createExperimentDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", "/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/DqnBaselines", "enduro^demon_attack^pong^space_invaders", summed = True, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
+    createExperimentDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", "/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/DqnBaselines", "enduro^pong^gopher^space_invaders", summed = True, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
+    return
 
     ###
     # Creates a graphs in the experiment  + architectures directory for every result file
@@ -508,6 +518,9 @@ def main(args):
     romStringList   = ["assault^demon_attack^space_invaders^phoenix", "enduro^demon_attack^pong^space_invaders", "enduro^pong^gopher^space_invaders"]
     taskPrefixList  = ["4Similar", "2Similar", "NonSimilar"]
     taskIDList      = [2, 3, 3]
+    # romStringList = ["assault^demon_attack^space_invaders^phoenix", "enduro^demon_attack^pong^space_invaders", "enduro^pong^gopher^space_invaders"]
+    # taskPrefixList = ["4Similar", "2Similar", "NonSimilar"]
+    # taskIDList = [2, 3, 3]
     
     #compare demon attack
     # romStringList = ["assault^demon_attack^space_invaders^phoenix", "enduro^demon_attack^pong^space_invaders"]
@@ -518,6 +531,9 @@ def main(args):
     # romStringList = ["enduro^demon_attack^pong^space_invaders", "enduro^pong^gopher^space_invaders"]
     # taskPrefixList = ["2Similar", "NonSimilar"]
     # taskIDList = [0, 0]
+    romStringList = ["enduro^demon_attack^pong^space_invaders", "enduro^pong^gopher^space_invaders"]
+    taskPrefixList = ["2Similar", "NonSimilar"]
+    taskIDList = [0, 0]
 
     
 
@@ -541,6 +557,7 @@ def main(args):
         #   Compare One architecture and disjointDQN (Baseline) across experiments 
         ###
 
+
         # if e == "disjointDQNNet":
         #     continue
 
@@ -548,8 +565,13 @@ def main(args):
         # eList.append(e)
         # eList.append("disjointDQNNet")
 
-        # createComparisonDataSeries(experimentBase, romStringList, taskIDList, taskPrefixList, eList, baselineDirectory, summed = True,  divided = divided, resultsCollectionFunction = resultsCollectionFunctionSummed)
+    baselineDirectory = "/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/DqnBaselines"
 
+    for e in extensionList:
+        createComparisonDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", romStringList, taskIDList, taskPrefixList, [e], baselineDirectory, summed = False, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
+        createComparisonDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", romStringList, taskIDList, taskPrefixList, [e], baselineDirectory, summed = True, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
+
+        # createComparisonDataSeries(experimentBase, romStringList, taskIDList, taskPrefixList, eList, baselineDirectory, summed = True,  divided = divided, resultsCollectionFunction = resultsCollectionFunctionSummed)
 
 
     ###
@@ -561,6 +583,9 @@ def main(args):
 
 
     plt.show()
+
+    createComparisonDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", romStringList, taskIDList, taskPrefixList, extensionList, baselineDirectory, summed = False, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
+    createComparisonDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", romStringList, taskIDList, taskPrefixList, extensionList, baselineDirectory, summed = True, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
 
     return
 
