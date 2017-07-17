@@ -475,6 +475,10 @@ def main(args):
     # createExperimentDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", "/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/DqnBaselines", "enduro^demon_attack^pong^space_invaders", summed = False, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
     # createExperimentDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", "/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/DqnBaselines", "enduro^pong^gopher^space_invaders", summed = False, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
 
+    # createExperimentDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", "/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/DqnBaselines", "assault^demon_attack^space_invaders^phoenix", summed = False, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
+    # createExperimentDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", "/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/DqnBaselines", "enduro^demon_attack^pong^space_invaders", summed = False, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
+    # createExperimentDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", "/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/DqnBaselines", "enduro^pong^gopher^space_invaders", summed = False, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
+
     # createExperimentDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", "/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/DqnBaselines", "assault^demon_attack^space_invaders^phoenix", summed = True, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
     # createExperimentDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", "/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/DqnBaselines", "enduro^demon_attack^pong^space_invaders", summed = True, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
     createExperimentDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", "/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/DqnBaselines", "enduro^pong^gopher^space_invaders", summed = True, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
@@ -581,11 +585,10 @@ def main(args):
     # createComparisonDataSeries(experimentBase, romStringList, taskIDList, taskPrefixList, extensionList, baselineDirectory, summed = False, divided = divided, resultsCollectionFunction = resultsCollectionFunctionSummed)
     createComparisonDataSeries(experimentBase, romStringList, taskIDList, taskPrefixList, extensionList, baselineDirectory, summed = True,  divided = divided, resultsCollectionFunction = resultsCollectionFunctionSummed)
 
-
     plt.show()
 
-    createComparisonDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", romStringList, taskIDList, taskPrefixList, extensionList, baselineDirectory, summed = False, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
-    createComparisonDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", romStringList, taskIDList, taskPrefixList, extensionList, baselineDirectory, summed = True, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
+    # createComparisonDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", romStringList, taskIDList, taskPrefixList, extensionList, baselineDirectory, summed = False, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
+    # createComparisonDataSeries("/home/robpost/Desktop/ResearchDevelopment/MiscScripts/CompiledResults/testStructure/transferMultigameResult", romStringList, taskIDList, taskPrefixList, extensionList, baselineDirectory, summed = True, divided = True, resultsCollectionFunction = resultsCollectionFunctionSummed)
 
     return
 
