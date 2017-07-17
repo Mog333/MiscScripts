@@ -477,7 +477,7 @@ def computeAverageOverMultipleSeeds(directory, sumData = False, resultsCollectio
 
         for index in xrange(numDatapoints):
             resultsAveraged[index] = np.mean(resultsData[index])
-            resultsStdDev[index]   = np.std( resultsData[index])# / np.sqrt(len(resultsData[index]))
+            resultsStdDev[index]   = np.std( resultsData[index], dd0f = 1)# / np.sqrt(len(resultsData[index]))
 
         # print resultsAveraged
         # print resultsStdDev
@@ -505,7 +505,7 @@ def createSummedDataFile(sourceFile, resultsCollectionFunction = getResultsFromT
         reads the x/y data of a results file in columns, 
         computes the summed data ( each y value is the sum of all previous y values),
         writes the resulting summed data to a file
-            file name is sourceFile with _Summmed suffix before file extension
+            file name is sourceFile with _Summed suffix before file extension
     '''
 
     startFilenameIndex  = sourceFile.rindex("/")
@@ -571,6 +571,7 @@ def createAveragedResultsFilesForDirectory(directory, resultFileNames = ["task_0
         Writes a averaged file for/in every directory found that has seed folders 
     '''
     experimentBaseDirectories = findAllExperimentSeedBaseFoldersUnderDirectory(directory)
+    print(experimentBaseDirectories)
     for experimentBase in experimentBaseDirectories:
         writeAveragedDataFileOverMultipleSeeds(experimentBase, resultFileNames, resultsCollectionFunction)
 
@@ -684,7 +685,33 @@ def function2():
     print(d["bestMultitaskEpochData"])
 
 
+def function3():
+    resultsCollectionFunction        = lambda f: getResultsFromTaskFile(f, 0, 3, -1)
+    resultsCollectionFunctionSummed  = lambda f: getResultsFromTaskFile(f, 0, 1, -1)
 
+    baseFolder = "/home/robert/Desktop/Research/MultiGameResults/20EpochResultsOnly/"
+    experimentDirectories = findAllExperimentSeedBaseFoldersUnderDirectory(baseFolder)
+
+    result4TaskFileNames         = ["task_0_results.csv", "task_1_results.csv", "task_2_results.csv", "task_3_results.csv"]
+    result4TaskFileNamesSummed   = ["task_0_results_Summed.csv", "task_1_results_Summed.csv", "task_2_results_Summed.csv", "task_3_results_Summed.csv"]
+
+    #Creates all summed data files for every result file
+
+    for experimentDirectory in experimentDirectories:
+        seedFolders = [x for x in os.listdir(experimentDirectory) if "seed" in x]
+
+        for seed in seedFolders:
+            currentDirectory = experimentDirectory + "/" + seed
+            resultFiles = findResultsFiles(currentDirectory)
+
+            for resultFile in resultFiles:
+                fullPath = currentDirectory + "/" + resultFile
+                # print(fullPath)
+                createSummedDataFile(fullPath , resultsCollectionFunction)
+
+    #Then creates the average over the task files and the average over the summed task files 
+    createAveragedResultsFilesForDirectory(baseFolder, result4TaskFileNames, resultsCollectionFunction)
+    createAveragedResultsFilesForDirectory(baseFolder, result4TaskFileNamesSummed, resultsCollectionFunctionSummed)
 
 
 
@@ -692,7 +719,8 @@ def main(args):
     resultsCollectionFunction        = lambda f: getResultsFromTaskFile(f, 0, 3, -1)
     resultsCollectionFunctionSummed  = lambda f: getResultsFromTaskFile(f, 0, 1, -1)
 
-    function1()
+    # function1()
+    function3()
     
     # condition       = lambda c: (c.startswith("task_") and c.endswith(".csv") and "results" in c and "Summed" not in c)
     # conditionSummed = lambda c: (c.startswith("task_") and c.endswith(".csv") and "results" in c and "Summed" in c)
